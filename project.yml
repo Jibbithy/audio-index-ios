@@ -1,0 +1,87 @@
+# The Xcode project is GENERATED from this file by xcodegen, not hand-edited.
+#   brew install xcodegen && xcodegen generate
+name: AudioIndex
+# Signing: set DEVELOPMENT_TEAM under settings.base, or in Xcode, to run on a device.
+options:
+  bundleIdPrefix: com.example
+  deploymentTarget:
+    iOS: "18.0"
+  createIntermediateGroups: true
+packages:
+  # The Spotify SDK is a SwiftPM package whose Package.swift wraps the
+  # checked-in SpotifyiOS.xcframework as a local binaryTarget - so it resolves
+  # like any other dependency and nothing is vendored into this repo.
+  SpotifyiOS:
+    url: https://github.com/spotify/ios-sdk
+    exactVersion: 5.0.1
+targets:
+  AudioIndex:
+    type: application
+    platform: iOS
+    sources: [AudioIndex]
+    dependencies:
+      - package: SpotifyiOS
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.example.audioindex
+        GENERATE_INFOPLIST_FILE: YES
+        CODE_SIGN_STYLE: Automatic
+        MARKETING_VERSION: "1.0"
+        CURRENT_PROJECT_VERSION: "1"
+        INFOPLIST_KEY_CFBundleDisplayName: Audio Index
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        SWIFT_VERSION: "6.0"
+        ENABLE_USER_SCRIPT_SANDBOXING: YES
+        TARGETED_DEVICE_FAMILY: "1"
+    info:
+      path: AudioIndex/Info.plist
+      properties:
+        CFBundleDisplayName: Audio Index
+        UILaunchScreen: {}
+        # Navidrome files are played by THIS app, inside its own AVAudioSession.
+        # Without this key iOS suspends the process the moment the screen locks
+        # and the audio stops dead mid-bar - which is most listening. It does
+        # nothing for Spotify playback, where the audio belongs to the Spotify
+        # app and the phone locking is that app's problem, not ours.
+        UIBackgroundModes: [audio]
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # Without this the SDK cannot see whether Spotify is installed:
+        # canOpenURL returns false for every unlisted scheme, so App Remote
+        # reports "Spotify not installed" on a phone that has it.
+        LSApplicationQueriesSchemes: [spotify]
+        # Navidrome is reached over plain HTTP at a tailnet address, which ATS
+        # blocks outright by default. The narrower knobs do not cover it:
+        # NSExceptionDomains matches domain NAMES, not IP literals, and
+        # NSAllowsLocalNetworking exempts only .local, unqualified names and
+        # the RFC 1918 private ranges - a tailnet address is in the CGNAT range,
+        # which is none of those. Nothing here forces plain HTTP; the index
+        # connection is still HTTPS with a real certificate.
+        # Navidrome is plain HTTP on the tailnet. ATS blocks that, and the
+        # narrow knobs do not reach it: NSExceptionDomains matches domain NAMES
+        # not IP literals, and NSAllowsLocalNetworking exempts only .local and
+        # RFC 1918 - a tailnet address is in the CGNAT range, neither.
+        #
+        # The way out is MagicDNS: reach Navidrome by its tailnet HOSTNAME and
+        # the exception applies. This is scoped to that one domain instead of
+        # NSAllowsArbitraryLoads, which would have permitted cleartext to
+        # anywhere on the internet for the sake of one box on the tailnet.
+        NSAppTransportSecurity:
+          NSExceptionDomains:
+            your-server.example:
+              NSIncludesSubdomains: true
+              NSExceptionAllowsInsecureHTTPLoads: true
+        CFBundleURLTypes:
+          - CFBundleURLName: com.example.audioindex
+            CFBundleURLSchemes: [audioindex]
+  AudioIndexTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [AudioIndexTests]
+    dependencies:
+      - target: AudioIndex
+    settings:
+      base:
+        SWIFT_VERSION: "6.0"
+        GENERATE_INFOPLIST_FILE: YES

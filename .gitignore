@@ -1,0 +1,11 @@
+*.xcodeproj
+build/
+DerivedData/
+.DS_Store
+signing.yml
+.env
+.env.*
+.DS_Store
+signing.yml
+build/
+DerivedData/

@@ -1,5 +1,7 @@
 # Audio Index
 
+[![CI](https://github.com/Jibbithy/audio-index-ios/actions/workflows/ci.yml/badge.svg)](https://github.com/Jibbithy/audio-index-ios/actions/workflows/ci.yml)
+
 A native iOS music player that brings Spotify and a self-hosted music library together, with playlists that can mix both sources.
 
 Built with SwiftUI, AVFoundation and the Spotify iOS SDK. Includes 217 unit tests.
